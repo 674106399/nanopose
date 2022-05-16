@@ -1,0 +1,47 @@
+save_dir: workspace/convnext_topdown_128
+model:
+  weight_averager:
+    name: ExpMovingAverager
+    dacay: 0.9998
+  arch:
+    name: TopDown
+    detach_epoch: 10
+    backbone:
+      name: ConvNext
+      model_size: 1.0x
+    head:
+      name: JointCoordHead
+      fc_type: TokenPose+SimDR
+      in_channels: 256
+      num_joints: 21
+      in_res: 4
+      use_rle: True
+      pred_hand_type: True
+      pred_hand_valid: True
+      fc_cfg:
+        tokenpose:
+          patch_size: [1, 1]
+          emb_dim: 128
+          depth: 4
+          num_heads: 8
+          mlp_dim: 128
+          apply_init: True
+          pos_embedding_type: sine-full
+        simdr:
+          feat_dim: 256 # 128 * 2
+      loss:
+        use_jc_ohkm: False
+        jc_loss:
+          name: RLELoss3D
+          loss_weight: 1.0
+        bone_loss:
+          name: BoneLoss
+          loss_weight: 1.0
+        simdr_loss:
+          name: KLDiscretLoss
+          loss_weight: 10000.0
+        hand_loss:
+          name: BCELossWithLogits
+          loss_weight: 100.0
+
+
